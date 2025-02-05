@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Valtown Conversation Monitor</title>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --success-color: #2ecc71;
+        --error-color: #e74c3c;
+        --background-color: #f5f7fa;
+        --card-background: #ffffff;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: var(--background-color);
+        color: var(--primary-color);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        margin: 0;
+        color: var(--primary-color);
+      }
+
+      .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+
+      .status-badge.success {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .status-badge.error {
+        background-color: var(--error-color);
+        color: white;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: var(--card-background);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .card h2 {
+        margin: 0 0 15px 0;
+        font-size: 1.2em;
+        color: var(--primary-color);
+      }
+
+      .metric {
+        font-size: 2em;
+        font-weight: bold;
+        color: var(--secondary-color);
+        margin: 10px 0;
+      }
+
+      .conversation-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .conversation-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .conversation-item:last-child {
+        border-bottom: none;
+      }
+
+      .chart-container {
+        height: 200px;
+        margin-top: 15px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: var(--secondary-color);
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Valtown Conversation Monitor</h1>
+        <div id="api-status" class="status-badge">Checking Status...</div>
+      </header>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2>Active Conversations</h2>
+          <div class="metric" id="active-conversations">-</div>
+          <div class="chart-container" id="conversations-chart"></div>
+        </div>
+
+        <div class="card">
+          <h2>Sentiment Analysis</h2>
+          <div class="metric" id="sentiment-score">-</div>
+          <div class="chart-container" id="sentiment-chart"></div>
+        </div>
+
+        <div class="card">
+          <h2>Top Topics</h2>
+          <div id="topics-list">Loading...</div>
+        </div>
+
+        <div class="card">
+          <h2>Recent Conversations</h2>
+          <div class="conversation-list" id="recent-conversations">
+            <div class="loading">Loading conversations...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Initialize dashboard
+      async function initDashboard() {
+        await checkApiStatus();
+        await loadMetrics();
+        setInterval(loadMetrics, 30000); // Refresh every 30 seconds
+      }
+
+      // Check API Status
+      async function checkApiStatus() {
+        try {
+          const response = await fetch('/api/v1/health');
+          const data = await response.json();
+          
+          const statusElement = document.getElementById('api-status');
+          if (data.status === 'ok') {
+            statusElement.textContent = 'System Online';
+            statusElement.className = 'status-badge success';
+          } else {
+            throw new Error('API not healthy');
+          }
+        } catch (error) {
+          const statusElement = document.getElementById('api-status');
+          statusElement.textContent = 'System Offline';
+          statusElement.className = 'status-badge error';
+        }
+      }
+
+      // Load Metrics
+      async function loadMetrics() {
+        try {
+          const response = await fetch('/api/v1/analytics');
+          const data = await response.json();
+          
+          if (data.success) {
+            updateDashboard(data.data);
+          }
+        } catch (error) {
+          console.error('Error loading metrics:', error);
+        }
+      }
+
+      // Update Dashboard
+      function updateDashboard(data) {
+        // Update active conversations
+        document.getElementById('active-conversations').textContent = 
+          data.metrics.totalConversations || 0;
+
+        // Update sentiment score
+        const sentimentScore = calculateAverageSentiment(data.metrics.sentimentDistribution);
+        document.getElementById('sentiment-score').textContent = 
+          sentimentScore.toFixed(2);
+
+        // Update topics
+        updateTopics(data.metrics.uniqueTopics);
+
+        // Update recent conversations
+        updateRecentConversations(data.recentConversations || []);
+      }
+
+      // Calculate average sentiment
+      function calculateAverageSentiment(distribution) {
+        const total = distribution.positive + distribution.neutral + distribution.negative;
+        if (total === 0) return 0;
+        
+        return (
+          (distribution.positive - distribution.negative) / total
+        );
+      }
+
+      // Update topics list
+      function updateTopics(topics) {
+        const topicsList = document.getElementById('topics-list');
+        if (!topics || topics.length === 0) {
+          topicsList.innerHTML = '<div class="loading">No topics available</div>';
+          return;
+        }
+
+        topicsList.innerHTML = topics
+          .map(topic => `<div class="conversation-item">${topic}</div>`)
+          .join('');
+      }
+
+      // Update recent conversations
+      function updateRecentConversations(conversations) {
+        const conversationsList = document.getElementById('recent-conversations');
+        if (!conversations || conversations.length === 0) {
+          conversationsList.innerHTML = '<div class="loading">No conversations available</div>';
+          return;
+        }
+
+        conversationsList.innerHTML = conversations
+          .map(conv => `
+            <div class="conversation-item">
+              <div><strong>${new Date(conv.timestamp).toLocaleString()}</strong></div>
+              <div>${conv.content.substring(0, 100)}${conv.content.length > 100 ? '...' : ''}</div>
+            </div>
+          `)
+          .join('');
+      }
+
+      // Start the dashboard
+      initDashboard();
+    </script>
+  </body>
+</html>

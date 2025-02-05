@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  valtown-conversation-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT:-3456}:3456"
+    environment:
+      NODE_ENV: development
+      PORT: 3456
+      JWT_SECRET: ${JWT_SECRET}
+      VALTOWN_API_KEY: ${VALTOWN_API_KEY}
+      VALTOWN_ENDPOINT: https://api.val.town/v1
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      LOG_LEVEL: info
+      ANALYTICS_BATCH_SIZE: 100
+      ANALYTICS_PROCESS_INTERVAL: 300000
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./package.json:/usr/src/app/package.json
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./.env:/usr/src/app/.env
+    command: npm run dev
