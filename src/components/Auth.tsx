@@ -25,7 +25,11 @@ export function Auth({ onAuthStateChange }: AuthProps) {
       }
       onAuthStateChange(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
