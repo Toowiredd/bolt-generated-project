@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateContent, getContentSuggestions, schedulePost, getAnalytics, createABTest } from '../services/socialMediaService';
+import { generateContent, getContentSuggestions, schedulePost, getAnalytics, createABTest, getScheduledPosts } from '../services/socialMediaService';
 import { Breadcrumb } from './Breadcrumb';
 
 export function SocialMediaDashboard() {
@@ -19,9 +19,8 @@ export function SocialMediaDashboard() {
       setSuggestions(suggestionsData);
       const analyticsData = await getAnalytics();
       setAnalytics(analyticsData);
-      // Fetch scheduled posts (implement this function in socialMediaService)
-      // const scheduledPostsData = await getScheduledPosts();
-      // setScheduledPosts(scheduledPostsData);
+      const scheduledPostsData = await getScheduledPosts();
+      setScheduledPosts(scheduledPostsData);
     } catch (err) {
       setError('Failed to fetch data');
       console.error(err);
@@ -42,9 +41,8 @@ export function SocialMediaDashboard() {
     try {
       await schedulePost(content, 'twitter', new Date());
       setContent('');
-      // Refresh scheduled posts
-      // const scheduledPostsData = await getScheduledPosts();
-      // setScheduledPosts(scheduledPostsData);
+      const scheduledPostsData = await getScheduledPosts();
+      setScheduledPosts(scheduledPostsData);
     } catch (err) {
       setError('Failed to schedule post');
       console.error(err);
@@ -101,7 +99,11 @@ export function SocialMediaDashboard() {
         
         <div className="mt-8 bg-deep-purple/30 p-6 rounded-lg">
           <h2 className="text-2xl text-amber-300 mb-4">Scheduled Posts</h2>
-          {/* Display scheduled posts here */}
+          <ul className="list-disc pl-5 text-gray-100">
+            {scheduledPosts.map((post, index) => (
+              <li key={index}>{post.content} - {new Date(post.scheduledTime).toLocaleString()}</li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

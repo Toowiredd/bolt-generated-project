@@ -24,7 +24,7 @@ function App() {
   }, []);
 
   const ProtectedRoute = ({ children, requiredRole }: { children: React.ReactNode, requiredRole?: string }) => {
-    if (!user) {
+    if (user === null) {
       return <Navigate to="/auth" replace />;
     }
     if (requiredRole && user.role !== requiredRole) {

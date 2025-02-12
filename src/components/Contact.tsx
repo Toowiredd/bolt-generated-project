@@ -9,7 +9,7 @@ export function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
+    // Implement form submission logic
     console.log('Form submitted:', { name, email, message });
   };
 

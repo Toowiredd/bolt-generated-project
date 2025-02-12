@@ -1,5 +1,5 @@
 import axios from 'axios';
-import jwtDecode from 'jwt-decode';
+import { decode as jwtDecode } from 'jwt-decode';
 
 const VAL_TOWN_API_KEY = process.env.VITE_VAL_TOWN_API_KEY;
 

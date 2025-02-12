@@ -7,8 +7,10 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
-      return next(new Error('Missing or invalid authorization header'
-));
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'Missing or invalid authorization header'
+      });
     }
 
     const token = authHeader.split(' ')[1];
@@ -19,8 +21,10 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return next(new Error('Invalid or expired token'
-));
+      return res.status(401).json({
+        error: 'Authentication failed',
+        message: 'Invalid or expired token'
+      });
     }
 
     next(error);
@@ -30,13 +34,17 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 export const authorize = (requiredRole: UserAuth['role']) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return next(new Error('User not authenticated'
-));
+      return res.status(403).json({
+        error: 'Authorization failed',
+        message: 'User not authenticated'
+      });
     }
 
     if (req.user.role !== requiredRole && req.user.role !== 'admin') {
-      return next(new Error(`Required role: ${requiredRole}`
-));
+      return res.status(403).json({
+        error: 'Authorization failed',
+        message: `Required role: ${requiredRole}`
+      });
     }
 
     next();
@@ -46,13 +54,17 @@ export const authorize = (requiredRole: UserAuth['role']) => {
 export const checkPermission = (requiredPermission: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return next(new Error('User not authenticated'
-));
+      return res.status(403).json({
+        error: 'Authorization failed',
+        message: 'User not authenticated'
+      });
     }
 
     if (!req.user.permissions.includes(requiredPermission) && req.user.role !== 'admin') {
-      return next(new Error(`Required permission: ${requiredPermission}`
-));
+      return res.status(403).json({
+        error: 'Authorization failed',
+        message: `Required permission: ${requiredPermission}`
+      });
     }
 
     next();

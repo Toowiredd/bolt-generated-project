@@ -3,7 +3,8 @@ import {
   errorHandler,
   notFoundHandler,
   APIError,
-  validationErrorHandler
+  validationErrorHandler,
+  asyncHandler
 } from '../error.middleware.js';
 import { config } from '../../config/config.js';
 
@@ -123,6 +124,29 @@ describe('Error Middleware', () => {
       expect(error.statusCode).toBe(403);
       expect(error.message).toBe('Forbidden');
       expect(error.details).toEqual({ reason: 'unauthorized' });
+    });
+  });
+
+  describe('asyncHandler', () => {
+    it('should handle resolved promise', async () => {
+      const asyncFn = asyncHandler(async (req, res, next) => {
+        res.status(200).json({ message: 'Success' });
+      });
+
+      await asyncFn(mockReq as Request, mockRes as Response, nextFunction);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Success' });
+    });
+
+    it('should handle rejected promise', async () => {
+      const asyncFn = asyncHandler(async (req, res, next) => {
+        throw new Error('Async error');
+      });
+
+      await asyncFn(mockReq as Request, mockRes as Response, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

@@ -104,6 +104,17 @@ describe('Auth Middleware', () => {
         message: 'Required role: analyst'
       });
     });
+
+    it('should reject missing req.user', () => {
+      const authorizeAnalyst = authorize('analyst');
+      authorizeAnalyst(mockReq as Request, mockRes as Response, nextFunction);
+
+      expect(mockRes.status).toHaveBeenCalledWith(403);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Authorization failed',
+        message: 'User not authenticated'
+      });
+    });
   });
 
   describe('checkPermission', () => {
@@ -134,6 +145,17 @@ describe('Auth Middleware', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         error: 'Authorization failed',
         message: 'Required permission: read:analytics'
+      });
+    });
+
+    it('should reject missing req.user', () => {
+      const checkAnalyticsPermission = checkPermission('read:analytics');
+      checkAnalyticsPermission(mockReq as Request, mockRes as Response, nextFunction);
+
+      expect(mockRes.status).toHaveBeenCalledWith(403);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Authorization failed',
+        message: 'User not authenticated'
       });
     });
   });
