@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { decode as jwtDecode } from 'jwt-decode';
+import { decode } from 'jwt-decode';
 
 const VAL_TOWN_API_KEY = process.env.VITE_VAL_TOWN_API_KEY;
 
@@ -33,7 +33,7 @@ export const getCurrentUser = (): User | null => {
   const token = localStorage.getItem('token');
   if (!token) return null;
   try {
-    return jwtDecode(token) as User;
+    return decode(token) as User;
   } catch (error) {
     console.error('Error decoding token:', error);
     return null;
