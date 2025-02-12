@@ -50,6 +50,28 @@ describe('ValTownService', () => {
 
       expect(result).toBe(false);
     });
+
+    it('should handle invalid data', async () => {
+      const invalidConversation = {
+        id: '123',
+        timestamp: 'invalid-date',
+        content: 'Test conversation',
+        metadata: {
+          source: 'test',
+          type: 'chat'
+        }
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ error: 'Invalid data' })
+      });
+
+      const result = await valTownService.storeConversation(invalidConversation as any);
+
+      expect(result).toBe(false);
+    });
   });
 
   describe('getConversation', () => {
@@ -85,6 +107,18 @@ describe('ValTownService', () => {
       });
 
       const result = await valTownService.getConversation('999');
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle invalid ID', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ error: 'Invalid ID' })
+      });
+
+      const result = await valTownService.getConversation('invalid-id');
 
       expect(result).toBeNull();
     });
@@ -139,6 +173,21 @@ describe('ValTownService', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should handle invalid date range', async () => {
+      const invalidStartDate = new Date('invalid-date');
+      const invalidEndDate = new Date('invalid-date');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ error: 'Invalid date range' })
+      });
+
+      const result = await valTownService.generateAnalytics(invalidStartDate, invalidEndDate);
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('getStoredAnalytics', () => {
@@ -174,6 +223,18 @@ describe('ValTownService', () => {
         expect.stringContaining('/analytics/day'),
         expect.any(Object)
       );
+    });
+
+    it('should handle no stored data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ error: 'No stored data' })
+      });
+
+      const result = await valTownService.getStoredAnalytics('day');
+
+      expect(result).toBeNull();
     });
   });
 });

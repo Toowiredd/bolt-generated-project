@@ -109,4 +109,47 @@ describe('AnalysisService', () => {
       });
     });
   });
+
+  describe('sanitizeText', () => {
+    it('should sanitize text by removing sensitive information', () => {
+      const text = 'Contact me at test@example.com or 123-456-7890';
+      const sanitizedText = analysisService['sanitizeText'](text);
+
+      expect(sanitizedText).not.toContain('test@example.com');
+      expect(sanitizedText).not.toContain('123-456-7890');
+      expect(sanitizedText).toContain('[EMAIL]');
+      expect(sanitizedText).toContain('[PHONE]');
+    });
+  });
+
+  describe('extractTopics', () => {
+    it('should extract topics from text', () => {
+      const text = 'AI and machine learning are popular topics in technology.';
+      const topics = analysisService['extractTopics'](text);
+
+      expect(topics).toBeInstanceOf(Array);
+      expect(topics.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('extractEntities', () => {
+    it('should extract entities from text', () => {
+      const text = 'John and Mary went to New York City.';
+      const entities = analysisService['extractEntities'](text);
+
+      expect(entities).toBeInstanceOf(Array);
+      expect(entities).toContain('John');
+      expect(entities).toContain('Mary');
+      expect(entities).toContain('New York City');
+    });
+  });
+
+  describe('analyzeSentiment', () => {
+    it('should analyze sentiment of text', () => {
+      const text = 'I am very happy with the results!';
+      const sentiment = analysisService['analyzeSentiment'](text);
+
+      expect(sentiment).toBeGreaterThan(0);
+    });
+  });
 });
