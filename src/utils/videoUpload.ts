@@ -36,7 +36,7 @@ export async function uploadVideo(
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${process.env.VITE_VAL_TOWN_API_KEY}`
+        'Authorization': `Bearer ${import.meta.env.VITE_VAL_TOWN_API_KEY}`
       }
     });
 
