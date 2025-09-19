@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const VAL_TOWN_API_KEY = process.env.VITE_VAL_TOWN_API_KEY;
+const VAL_TOWN_API_KEY = import.meta.env.VITE_VAL_TOWN_API_KEY;
 
 export async function generateContent(prompt: string, type: 'text' | 'image'): Promise<string> {
   try {

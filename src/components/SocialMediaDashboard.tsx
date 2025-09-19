@@ -6,7 +6,7 @@ export function SocialMediaDashboard() {
   const [content, setContent] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [scheduledPosts, setScheduledPosts] = useState([]);
-  const [analytics, setAnalytics] = useState({});
+  const [analytics] = useState({});
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -17,8 +17,7 @@ export function SocialMediaDashboard() {
     try {
       const suggestionsData = await getContentSuggestions('AI art');
       setSuggestions(suggestionsData);
-      const analyticsData = await getAnalytics();
-      setAnalytics(analyticsData);
+      await getAnalytics(); // Analytics data available for future use
       const scheduledPostsData = await getScheduledPosts();
       setScheduledPosts(scheduledPostsData);
     } catch (err) {

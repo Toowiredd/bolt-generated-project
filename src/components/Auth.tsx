@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Lock, Mail } from 'lucide-react';
-import { signUp, signIn, UserProfile } from '../services/authService';
+import { signUp, signIn, type UserProfile } from '../services/authService';
 
 interface AuthProps {
   onAuthStateChange: (user: UserProfile | null) => void;

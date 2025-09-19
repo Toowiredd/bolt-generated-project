@@ -13,10 +13,10 @@ import { MediaDashboard } from './components/MediaDashboard';
 import { SocialMediaDashboard } from './components/SocialMediaDashboard';
 import { About } from './components/About';
 import { Contact } from './components/Contact';
-import { getCurrentUser, User } from './services/authService';
+import { getCurrentUser, type UserProfile as UserProfileType } from './services/authService';
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfileType | null>(null);
 
   useEffect(() => {
     const user = getCurrentUser();
